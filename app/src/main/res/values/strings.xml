@@ -1,0 +1,7 @@
+<resources>
+  <string name="app_name">Reset WiFi</string>
+  <string name="network_history">networkHistory.txt</string>
+  <string name="i_am_root">I AM ROOT</string>
+  <string name="reset_wifi">Reset WiFi</string>
+  <string name="remove_warning">Selected files will be removed</string>
+</resources>

@@ -9,7 +9,7 @@ import java.io.OutputStreamWriter;
 
 /**
  * Created by david on 2/1/2016.
- * <p/>
+ *
  * Use `su` command to get root permission
  */
 public class RootProcess {
@@ -41,15 +41,17 @@ public class RootProcess {
   /**
    * Execute a command in the root process
    *
-   * @param cmd command to execute
+   * @param cmd       command to execute
+   * @param readStdIn read from stdin
    */
-  public String execute(String cmd) {
+  public String execute(String cmd, boolean readStdIn) {
     if (out == null) return "";
 
     try {
       out.write(cmd + "\n");
       out.flush();
-      return in.readLine();
+
+      return readStdIn ? in.readLine() : "";
     } catch (IOException e) {
       Log.e(TAG, String.format("cannot execute %s", cmd));
       try {

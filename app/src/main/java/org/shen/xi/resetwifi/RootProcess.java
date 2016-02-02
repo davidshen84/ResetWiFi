@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter;
  * Use `su` command to get root permission
  */
 public class RootProcess {
-  protected static final String TAG = RootProcess.class.getName();
+  private static final String TAG = RootProcess.class.getName();
   private static final RootProcess instance = new RootProcess();
   private OutputStreamWriter out = null;
   private BufferedReader in = null;

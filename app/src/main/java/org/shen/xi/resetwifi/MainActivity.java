@@ -21,9 +21,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
   private boolean hasNetworkHistoryFile = false;
   private CheckBox checkBoxNetworkHistory;
-  private View viewIsRoot;
   private RootProcess rootProcess;
-  private TextView textViewLog;
+  private TextView textViewMessage;
   private Handler mainHandler;
 
   @Override
@@ -32,18 +31,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     setContentView(R.layout.activity_main);
 
     checkBoxNetworkHistory = (CheckBox) findViewById(R.id.checkBoxNetworkHistory);
-    viewIsRoot = findViewById(R.id.textViewIsRoot);
-    textViewLog = (TextView) findViewById(R.id.textViewLog);
+    textViewMessage = (TextView) findViewById(R.id.textViewMessage);
 
     mainHandler = new Handler(getMainLooper()) {
       @Override
       public void handleMessage(Message msg) {
-        if (msg.obj == null || msg.obj.getClass().isInstance(String.class)) {
+        if (msg.obj == null || !(msg.obj instanceof String)) {
           Log.e(TAG, "cannot handle message");
           return;
         }
 
-        textViewLog.append((String) msg.obj);
+        textViewMessage.append((String) msg.obj);
       }
     };
 
@@ -63,21 +61,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     if (!rootProcess.hasRootPermission()) {
       // no root
       mainHandler.sendMessage(createLogMessage("no root permission"));
-      return;
+    } else {
+      // has root
+      mainHandler.sendMessage(createLogMessage("got root permission"));
+
+      update();
     }
+  }
 
-    // has root
-    mainHandler.sendMessage(createLogMessage("got root permission"));
-
+  private void update() {
     // test /data/misc/wifi/networkHistory.txt
     String fileExists = rootProcess.execute(testFileExists(networkHistoryTxtFilepath), true);
     hasNetworkHistoryFile = Boolean.parseBoolean(fileExists);
+
     mainHandler.post(new Runnable() {
       @Override
       public void run() {
         checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
         checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
-        viewIsRoot.setVisibility(View.VISIBLE);
       }
     });
   }
@@ -90,13 +91,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   }
 
   private String testFileExists(String filepath) {
-    return String.format("[ -e %s ] && echo 'true' || echo 'false'", filepath);
+    return String.format("[ -e %s ] && echo true || echo false", filepath);
   }
 
   @Override
   public void onClick(View view) {
-    Log.d(TAG, "reset wifi");
     WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+
     // 1. disable wifi
     if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED
       || wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
@@ -116,5 +117,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // 3. enable wifi
     wifiManager.setWifiEnabled(true);
+
+    // 4. update UI after 1 sec delay
+    mainHandler.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        update();
+      }
+    }, 1000);
   }
 }

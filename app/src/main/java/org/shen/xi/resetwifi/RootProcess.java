@@ -9,7 +9,7 @@ import java.io.OutputStreamWriter;
 
 /**
  * Created by david on 2/1/2016.
- *
+ * <p/>
  * Use `su` command to get root permission
  */
 public class RootProcess {
@@ -25,10 +25,10 @@ public class RootProcess {
       out = new OutputStreamWriter(process.getOutputStream());
       in = new BufferedReader(new InputStreamReader((process.getInputStream())));
 
-      out.write("id\n");
+      out.write("id -u\n");
       out.flush();
       String id = in.readLine();
-      hasRootPermission = id.startsWith("uid=0");
+      hasRootPermission = id.equals("0");
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -57,16 +57,15 @@ public class RootProcess {
       try {
         out.close();
       } catch (IOException ignored) {
-      } finally {
-        out = null;
       }
 
       try {
         in.close();
       } catch (IOException ignored) {
-      } finally {
-        in = null;
       }
+
+      out = null;
+      in = null;
 
       return "";
     }
@@ -78,10 +77,11 @@ public class RootProcess {
 
   @Override
   protected void finalize() throws Throwable {
-    super.finalize();
     if (out != null && hasRootPermission) {
       out.write("exit\n");
-      Log.d("RootProcess", "RootProcess finalize");
+      out.flush();
+      Log.d(TAG, "finalized");
     }
+    super.finalize();
   }
 }

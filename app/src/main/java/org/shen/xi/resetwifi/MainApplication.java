@@ -8,7 +8,6 @@ import com.google.android.gms.analytics.Tracker;
 
 public class MainApplication extends Application {
 
-
   private GoogleAnalytics googleAnalytics;
 
   public void initializeContext(Context context) {

@@ -16,6 +16,9 @@ import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.inject.Guice;
+import com.google.inject.Inject;
+import com.google.inject.Injector;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -24,7 +27,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
   private boolean hasNetworkHistoryFile = false;
   private CheckBox checkBoxNetworkHistory;
-  private RootProcess rootProcess = RootProcess.getInstance();
+  @Inject
+  private RootProcess rootProcess;
   private TextView textViewMessage;
   private Handler mainHandler;
   private Tracker appTracker;
@@ -64,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
       buttonResetWifi.setOnClickListener(this);
     }
+
+    Injector injector = Guice.createInjector(new MainModule());
+    injector.injectMembers(this);
   }
 
   @Override

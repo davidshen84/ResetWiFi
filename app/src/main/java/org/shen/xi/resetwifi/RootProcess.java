@@ -20,6 +20,13 @@ public class RootProcess {
   private boolean hasRootPermission = false;
 
   private RootProcess() {
+  }
+
+  public static RootProcess getInstance() {
+    return instance;
+  }
+
+  public void start() {
     try {
       Process process = Runtime.getRuntime().exec("su\n");
       out = new OutputStreamWriter(process.getOutputStream());
@@ -32,10 +39,6 @@ public class RootProcess {
     } catch (IOException e) {
       e.printStackTrace();
     }
-  }
-
-  public static RootProcess getInstance() {
-    return instance;
   }
 
   /**
@@ -77,11 +80,18 @@ public class RootProcess {
 
   @Override
   protected void finalize() throws Throwable {
-    if (out != null && hasRootPermission) {
-      out.write("exit\n");
-      out.flush();
-      Log.d(TAG, "finalized");
-    }
+    stop();
     super.finalize();
+  }
+
+  public void stop() {
+    if (out != null && hasRootPermission) {
+      try {
+        out.write("exit\n");
+        out.flush();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
   }
 }

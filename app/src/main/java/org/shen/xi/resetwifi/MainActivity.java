@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
   private boolean hasNetworkHistoryFile = false;
   private CheckBox checkBoxNetworkHistory;
-  private RootProcess rootProcess;
+  private RootProcess rootProcess = RootProcess.getInstance();
   private TextView textViewMessage;
   private Handler mainHandler;
   private Tracker appTracker;
@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     checkBoxNetworkHistory = (CheckBox) findViewById(R.id.checkBoxNetworkHistory);
     textViewMessage = (TextView) findViewById(R.id.textViewMessage);
+
 
     mainHandler = new Handler(getMainLooper()) {
       @Override
@@ -59,13 +60,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
     if (accessWifiState == PackageManager.PERMISSION_DENIED || changeWifiState == PackageManager.PERMISSION_DENIED) {
       mainHandler.sendMessage(createLogMessage("cannot access/change wifi state"));
-      return;
+    } else {
+      Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
+      buttonResetWifi.setOnClickListener(this);
     }
+  }
 
-    Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
-    buttonResetWifi.setOnClickListener(this);
-    rootProcess = RootProcess.getInstance();
+  @Override
+  protected void onStart() {
+    super.onStart();
 
+    appTracker.setScreenName(TAG);
+    appTracker.send(new HitBuilders.ScreenViewBuilder().build());
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    rootProcess.start();
+
+    // clean previous message
+    textViewMessage.setText("");
     if (!rootProcess.hasRootPermission()) {
       // no root
       mainHandler.sendMessage(createLogMessage("no root permission"));
@@ -75,15 +90,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
       update();
     }
-
   }
 
   @Override
-  protected void onStart() {
-    super.onStart();
-
-    appTracker.setScreenName(TAG);
-    appTracker.send(new HitBuilders.ScreenViewBuilder().build());
+  protected void onPause() {
+    super.onPause();
+    rootProcess.stop();
   }
 
   private void update() {

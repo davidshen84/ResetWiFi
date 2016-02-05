@@ -14,9 +14,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-  private static final String TAG = MainActivity.class.getName();
+  private static final String TAG = MainActivity.class.getSimpleName();
   private static final String networkHistoryTxtFilepath = "/data/misc/wifi/networkHistory.txt";
 
   private boolean hasNetworkHistoryFile = false;
@@ -24,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   private RootProcess rootProcess;
   private TextView textViewMessage;
   private Handler mainHandler;
+  private Tracker appTracker;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +49,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
     };
 
+    // initialize application
+    MainApplication mainApplication = (MainApplication) getApplication();
+    mainApplication.initializeContext(this);
+    appTracker = mainApplication.getAppTracker();
+
     // check change wifi permission
     int accessWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
     int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
     if (accessWifiState == PackageManager.PERMISSION_DENIED || changeWifiState == PackageManager.PERMISSION_DENIED) {
-
       mainHandler.sendMessage(createLogMessage("cannot access/change wifi state"));
       return;
     }
@@ -67,6 +75,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
       update();
     }
+
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
+
+    appTracker.setScreenName(TAG);
+    appTracker.send(new HitBuilders.ScreenViewBuilder().build());
   }
 
   private void update() {
@@ -123,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       @Override
       public void run() {
         update();
+        appTracker.send(new HitBuilders.EventBuilder("action", "reset wifi").build());
       }
     }, 1000);
   }

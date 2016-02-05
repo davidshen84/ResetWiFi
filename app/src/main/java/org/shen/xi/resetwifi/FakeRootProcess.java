@@ -20,7 +20,7 @@ public class FakeRootProcess implements RootProcess {
 
   @Override
   public String execute(String command, boolean readStdIn) {
-    return null;
+    return "";
   }
 
   @Override

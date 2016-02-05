@@ -19,6 +19,7 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.name.Named;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -27,11 +28,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
   private boolean hasNetworkHistoryFile = false;
   private CheckBox checkBoxNetworkHistory;
-  @Inject
-  private RootProcess rootProcess;
   private TextView textViewMessage;
   private Handler mainHandler;
+
+  @Inject
+  private RootProcess rootProcess;
+
+  @Inject
+  @Named("app tracker")
   private Tracker appTracker;
+
+  @Inject
+  private WifiManager wifiManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     checkBoxNetworkHistory = (CheckBox) findViewById(R.id.checkBoxNetworkHistory);
     textViewMessage = (TextView) findViewById(R.id.textViewMessage);
-
 
     mainHandler = new Handler(getMainLooper()) {
       @Override
@@ -54,11 +61,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
     };
 
-    // initialize application
-    MainApplication mainApplication = (MainApplication) getApplication();
-    mainApplication.initializeContext(this);
-    appTracker = mainApplication.getAppTracker();
-
     // check change wifi permission
     int accessWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
     int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       buttonResetWifi.setOnClickListener(this);
     }
 
-    Injector injector = Guice.createInjector(new MainModule());
+    Injector injector = Guice.createInjector(new MainModule(this));
     injector.injectMembers(this);
   }
 
@@ -132,8 +134,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
   @Override
   public void onClick(View view) {
-    WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-
     // 1. disable wifi
     if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED
       || wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {

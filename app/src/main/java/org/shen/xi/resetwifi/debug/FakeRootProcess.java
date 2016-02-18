@@ -1,9 +1,12 @@
-package org.shen.xi.resetwifi;
+package org.shen.xi.resetwifi.debug;
 
 import android.util.Log;
 
+import org.shen.xi.resetwifi.BuildConfig;
+import org.shen.xi.resetwifi.RootProcess;
+
 /**
- * A fake implementation for debug
+ * A fake implementation for testing
  */
 public class FakeRootProcess implements RootProcess {
   private static final String TAG = FakeRootProcess.class.getSimpleName();
@@ -20,11 +23,17 @@ public class FakeRootProcess implements RootProcess {
 
   @Override
   public String execute(String command, boolean readStdIn) {
+    Log.d(TAG, String.format("would have executed: %s", command));
+
+    if (command.contains("networkHistory.txt")) {
+      return Boolean.toString(BuildConfig.hasNetworkHistory);
+    }
+
     return "";
   }
 
   @Override
   public boolean hasRootPermission() {
-    return true;
+    return BuildConfig.hasRoot;
   }
 }

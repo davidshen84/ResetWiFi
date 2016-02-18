@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   private Tracker appTracker;
 
   @Inject
-  private WifiManager wifiManager;
+  private WifiManagerWrapper wifiManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -135,9 +135,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   public void onClick(View view) {
     // 1. disable wifi
-    if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED
-      || wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
-      wifiManager.setWifiEnabled(false);
+    if (wifiManager.isOn()) {
+      wifiManager.off();
     }
 
     // 2. remove files
@@ -152,7 +151,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // 3. enable wifi
-    wifiManager.setWifiEnabled(true);
+    wifiManager.on();
 
     // 4. update UI after 1 sec delay
     mainHandler.postDelayed(new Runnable() {

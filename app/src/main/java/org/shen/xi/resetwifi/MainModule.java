@@ -8,11 +8,12 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
+import org.shen.xi.resetwifi.debug.FakeRootProcess;
+import org.shen.xi.resetwifi.debug.FakeWifiManagerWrapper;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import static android.content.Context.WIFI_SERVICE;
 
 public class MainModule extends AbstractModule {
   private final Context ctx;
@@ -23,10 +24,12 @@ public class MainModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    if (BuildConfig.DEBUG) {
+    if (BuildConfig.FLAVOR.startsWith("fakeRoot")) {
       bind(RootProcess.class).to(FakeRootProcess.class);
+      bind(WifiManagerWrapper.class).to(FakeWifiManagerWrapper.class);
     } else {
       bind(RootProcess.class).to(SuRootProcess.class).in(Singleton.class);
+      bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class);
     }
 
     bind(GoogleAnalytics.class).toInstance(GoogleAnalytics.getInstance(ctx));
@@ -35,7 +38,7 @@ public class MainModule extends AbstractModule {
   @Provides
   @Singleton
   public WifiManager provideWifiManager() {
-    return (WifiManager) ctx.getSystemService(WIFI_SERVICE);
+    return (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
   }
 
   @Provides

@@ -10,11 +10,24 @@ android {
     targetSdkVersion 23
     versionCode 1
     versionName "1.0"
+
+    buildConfigField "boolean", "hasRoot", "false"
+    buildConfigField "boolean", "hasNetworkHistory", "false"
   }
+
   buildTypes {
     release {
       minifyEnabled false
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+  }
+
+  productFlavors {
+    full {}
+
+    fakeRoot1 {
+      buildConfigField 'boolean', 'hasRoot', 'true'
+      buildConfigField 'boolean', 'hasNetworkHistory', 'true'
     }
   }
 }

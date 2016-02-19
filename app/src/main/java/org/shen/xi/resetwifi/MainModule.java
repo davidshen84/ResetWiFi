@@ -37,13 +37,13 @@ class MainModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public WifiManager provideWifiManager() {
+  private WifiManager provideWifiManager() {
     return (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
   }
 
   @Provides
   @Named("app tracker")
-  public Tracker providesAppTracker(GoogleAnalytics googleAnalytics) {
+  private Tracker providesAppTracker(GoogleAnalytics googleAnalytics) {
     return googleAnalytics.newTracker(R.xml.app_tracker);
   }
 }

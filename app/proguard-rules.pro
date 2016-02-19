@@ -15,3 +15,16 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-keepattributes *Annotation*
+
+-dontwarn sun.misc.Unsafe
+-dontwarn javax.annotation.**
+
+-keepclassmembers class org.shen.xi.** extends com.google.inject.AbstractModule {
+  @com.google.inject.Provides *;
+}
+
+-keepclassmembers class org.shen.xi.** {
+  @javax.inject.Inject *;
+}

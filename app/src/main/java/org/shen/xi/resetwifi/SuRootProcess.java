@@ -1,7 +1,5 @@
 package org.shen.xi.resetwifi;
 
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,14 +15,10 @@ public class SuRootProcess implements RootProcess {
   private boolean hasRootPermission = false;
   private Process process;
 
-  public void start() {
-    try {
-      process = Runtime.getRuntime().exec("su\n");
-      String id = execute_read("id -u");
-      hasRootPermission = id.equals("0");
-    } catch (IOException ignore) {
-      Log.w(TAG, "cannot get root permission");
-    }
+  public void start() throws IOException {
+    process = Runtime.getRuntime().exec("su\n");
+    String id = execute_read("id -u");
+    hasRootPermission = id.equals("0");
   }
 
   /**
@@ -78,12 +72,9 @@ public class SuRootProcess implements RootProcess {
     super.finalize();
   }
 
-  public void stop() {
+  public void stop() throws IOException {
     if (process != null) {
-      try {
-        execute_noread("exit");
-      } catch (IOException ignore) {
-      }
+      execute_noread("exit");
     }
   }
 }

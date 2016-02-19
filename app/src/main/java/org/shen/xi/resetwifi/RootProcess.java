@@ -1,9 +1,11 @@
 package org.shen.xi.resetwifi;
 
-public interface RootProcess {
-  void start();
+import java.io.IOException;
 
-  void stop();
+public interface RootProcess {
+  void start() throws IOException;
+
+  void stop() throws IOException;
 
   String execute(String command, boolean readStdIn);
 

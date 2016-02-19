@@ -19,6 +19,8 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import java.io.IOException;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -89,7 +91,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   protected void onResume() {
     super.onResume();
-    rootProcess.start();
+    try {
+      rootProcess.start();
+    } catch (IOException ignored) {
+    }
 
     // clean previous message
     textViewMessage.setText("");
@@ -107,7 +112,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   protected void onPause() {
     super.onPause();
-    rootProcess.stop();
+    try {
+      rootProcess.stop();
+    } catch (IOException ignored) {
+    }
   }
 
   private void update() {

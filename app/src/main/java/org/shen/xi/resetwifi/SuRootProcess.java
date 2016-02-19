@@ -14,22 +14,16 @@ import java.io.OutputStreamWriter;
  */
 public class SuRootProcess implements RootProcess {
   private static final String TAG = SuRootProcess.class.getSimpleName();
-  private OutputStreamWriter out = null;
-  private BufferedReader in = null;
   private boolean hasRootPermission = false;
+  private Process process;
 
   public void start() {
     try {
-      Process process = Runtime.getRuntime().exec("su\n");
-      out = new OutputStreamWriter(process.getOutputStream());
-      in = new BufferedReader(new InputStreamReader((process.getInputStream())));
-
-      out.write("id -u\n");
-      out.flush();
-      String id = in.readLine();
+      process = Runtime.getRuntime().exec("su\n");
+      String id = execute_read("id -u");
       hasRootPermission = id.equals("0");
-    } catch (Exception e) {
-      e.printStackTrace();
+    } catch (IOException ignore) {
+      Log.w(TAG, "cannot get root permission");
     }
   }
 
@@ -40,29 +34,37 @@ public class SuRootProcess implements RootProcess {
    * @param readStdIn read from stdin
    */
   public String execute(String cmd, boolean readStdIn) {
-    if (out == null) return "";
+    if (process == null)
+      throw new IllegalStateException("root process is not started");
 
     try {
+      if (readStdIn) {
+        return execute_read(cmd);
+      } else {
+        execute_noread(cmd);
+      }
+    } catch (IOException ignore) {
+    }
+
+    return "";
+  }
+
+  private String execute_read(String cmd) throws IOException {
+    try (
+      BufferedReader in = new BufferedReader(new InputStreamReader((process.getInputStream())));
+      OutputStreamWriter out = new OutputStreamWriter(process.getOutputStream())) {
       out.write(cmd + "\n");
       out.flush();
 
-      return readStdIn ? in.readLine() : "";
-    } catch (IOException e) {
-      Log.e(TAG, String.format("cannot execute %s", cmd));
-      try {
-        out.close();
-      } catch (IOException ignored) {
-      }
+      return in.readLine();
+    }
+  }
 
-      try {
-        in.close();
-      } catch (IOException ignored) {
-      }
-
-      out = null;
-      in = null;
-
-      return "";
+  private void execute_noread(String cmd) throws IOException {
+    try (
+      OutputStreamWriter out = new OutputStreamWriter(process.getOutputStream())) {
+      out.write(cmd + "\n");
+      out.flush();
     }
   }
 
@@ -77,12 +79,10 @@ public class SuRootProcess implements RootProcess {
   }
 
   public void stop() {
-    if (out != null && hasRootPermission) {
+    if (process != null) {
       try {
-        out.write("exit\n");
-        out.flush();
-      } catch (IOException e) {
-        e.printStackTrace();
+        execute_noread("exit");
+      } catch (IOException ignore) {
       }
     }
   }

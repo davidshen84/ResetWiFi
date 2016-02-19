@@ -37,7 +37,7 @@ class MainModule extends AbstractModule {
 
   @Provides
   @Singleton
-  private WifiManager provideWifiManager() {
+  private WifiManager providesWifiManager() {
     return (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
   }
 

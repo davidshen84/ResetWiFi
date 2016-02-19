@@ -2,12 +2,12 @@ package org.shen.xi.resetwifi;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,9 +17,10 @@ import android.widget.TextView;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
-import com.google.inject.name.Named;
+
+import javax.inject.Inject;
+import javax.inject.Named;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     checkBoxNetworkHistory = (CheckBox) findViewById(R.id.checkBoxNetworkHistory);
     textViewMessage = (TextView) findViewById(R.id.textViewMessage);
+    textViewMessage.setMovementMethod(ScrollingMovementMethod.getInstance());
 
     mainHandler = new Handler(getMainLooper()) {
       @Override
@@ -66,6 +68,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
     if (accessWifiState == PackageManager.PERMISSION_DENIED || changeWifiState == PackageManager.PERMISSION_DENIED) {
       mainHandler.sendMessage(createLogMessage("cannot access/change wifi state"));
+      finish();
     } else {
       Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
       buttonResetWifi.setOnClickListener(this);
@@ -112,18 +115,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     String fileExists = rootProcess.execute(testFileExists(networkHistoryTxtFilepath), true);
     hasNetworkHistoryFile = Boolean.parseBoolean(fileExists);
 
-    mainHandler.post(new Runnable() {
-      @Override
-      public void run() {
-        checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
-        checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
-      }
-    });
+    if (hasNetworkHistoryFile) {
+      mainHandler.post(new Runnable() {
+        @Override
+        public void run() {
+          checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
+          checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
+        }
+      });
+    }
   }
 
   private Message createLogMessage(String message) {
     Message msg = new Message();
-    msg.obj = message + "\n";
+    msg.obj = String.format("> %s\n", message);
 
     return msg;
   }

@@ -15,7 +15,7 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 
-public class MainModule extends AbstractModule {
+class MainModule extends AbstractModule {
   private final Context ctx;
 
   public MainModule(Context context) {

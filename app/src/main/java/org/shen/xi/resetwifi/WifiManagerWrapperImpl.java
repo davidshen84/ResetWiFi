@@ -12,7 +12,7 @@ import javax.inject.Inject;
  */
 public class WifiManagerWrapperImpl implements WifiManagerWrapper {
 
-  WifiManager wifiManager;
+  private final WifiManager wifiManager;
 
   @Inject
   public WifiManagerWrapperImpl(WifiManager wifiManager) {

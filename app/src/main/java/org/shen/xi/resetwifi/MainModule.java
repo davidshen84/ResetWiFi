@@ -28,8 +28,8 @@ class MainModule extends AbstractModule {
       bind(RootProcess.class).to(FakeRootProcess.class);
       bind(WifiManagerWrapper.class).to(FakeWifiManagerWrapper.class);
     } else {
-      bind(RootProcess.class).to(SuRootProcess.class).in(Singleton.class);
-      bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class);
+      bind(RootProcess.class).to(SuperUserProcess.class).in(Singleton.class);
+      bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
     }
 
     bind(GoogleAnalytics.class).toInstance(GoogleAnalytics.getInstance(ctx));

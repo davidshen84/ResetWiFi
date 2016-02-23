@@ -8,8 +8,8 @@ android {
     applicationId "org.shen.xi.resetwifi"
     minSdkVersion 23
     targetSdkVersion 23
-    versionCode 2
-    versionName "1.1"
+    versionCode 3
+    versionName "2.0"
 
     buildConfigField "boolean", "hasRoot", "false"
     buildConfigField "boolean", "hasNetworkHistory", "false"

@@ -20,6 +20,7 @@
 
 -dontwarn sun.misc.Unsafe
 -dontwarn javax.annotation.**
+-dontwarn com.google.common.**
 
 -keepclassmembers class org.shen.xi.** extends com.google.inject.AbstractModule {
   @com.google.inject.Provides *;

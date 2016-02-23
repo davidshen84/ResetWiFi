@@ -8,11 +8,13 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
-import org.shen.xi.resetwifi.debug.FakeRootProcess;
+import org.shen.xi.resetwifi.debug.FakeShellImpl;
 import org.shen.xi.resetwifi.debug.FakeWifiManagerWrapper;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
+
+import eu.chainfire.libsuperuser.Shell.Builder;
 
 
 class MainModule extends AbstractModule {
@@ -25,10 +27,11 @@ class MainModule extends AbstractModule {
   @Override
   protected void configure() {
     if (BuildConfig.FLAVOR.startsWith("fakeRoot")) {
-      bind(RootProcess.class).to(FakeRootProcess.class);
+      bind(Shell.class).to(FakeShellImpl.class);
       bind(WifiManagerWrapper.class).to(FakeWifiManagerWrapper.class);
     } else {
-      bind(RootProcess.class).to(SuperUserProcess.class).in(Singleton.class);
+      bind(Builder.class).in(Singleton.class);
+      bind(Shell.class).to(SUShell.class).in(Singleton.class);
       bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
     }
 

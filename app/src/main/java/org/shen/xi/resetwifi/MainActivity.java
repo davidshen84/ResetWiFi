@@ -16,13 +16,19 @@ import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.common.base.Joiner;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import eu.chainfire.libsuperuser.Shell.OnCommandResultListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -34,8 +40,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   private TextView textViewMessage;
   private Handler mainHandler;
 
+
   @Inject
-  private RootProcess rootProcess;
+  private Shell shell;
 
   @Inject
   @Named("app tracker")
@@ -91,21 +98,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   protected void onResume() {
     super.onResume();
-    try {
-      rootProcess.start();
-    } catch (IOException ignored) {
-    }
+    shell.open();
 
     // clean previous message
     textViewMessage.setText("");
-    if (!rootProcess.hasRootPermission()) {
-      // no root
-      mainHandler.sendMessage(createLogMessage("no root permission"));
-    } else {
-      // has root
+
+    if (shell.hasPrivilege()) {
       mainHandler.sendMessage(createLogMessage("got root permission"));
 
       update();
+    } else {
+      mainHandler.sendMessage(createLogMessage("no root permission"));
     }
   }
 
@@ -113,25 +116,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   protected void onPause() {
     super.onPause();
     try {
-      rootProcess.stop();
+      shell.close();
     } catch (IOException ignored) {
     }
   }
 
   private void update() {
     // test /data/misc/wifi/networkHistory.txt
-    String fileExists = rootProcess.execute(testFileExists(networkHistoryTxtFilepath), true);
-    hasNetworkHistoryFile = Boolean.parseBoolean(fileExists);
+    shell.execute(Collections.singletonList(testFileExists(networkHistoryTxtFilepath)), new OnCommandResultListener() {
+      @Override
+      public void onCommandResult(int commandCode, int exitCode, List<String> output) {
+        String result = Joiner.on("").join(output);
+        hasNetworkHistoryFile = Boolean.parseBoolean(result);
 
-    if (hasNetworkHistoryFile) {
-      mainHandler.post(new Runnable() {
-        @Override
-        public void run() {
-          checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
-          checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
+        if (hasNetworkHistoryFile) {
+          mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
+              checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
+            }
+          });
         }
-      });
-    }
+      }
+    });
   }
 
   private Message createLogMessage(String message) {
@@ -147,32 +155,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
   @Override
   public void onClick(View view) {
-    // 1. disable wifi
+    // 1. turn off wifi
     if (wifiManager.isOn()) {
       wifiManager.off();
     }
 
     // 2. remove files
     if (checkBoxNetworkHistory.isChecked()) {
-      rootProcess.execute("rm -f " + networkHistoryTxtFilepath, false);
-      boolean fileExists = Boolean.parseBoolean(rootProcess.execute(testFileExists(networkHistoryTxtFilepath), true));
-      Message message = fileExists
-        ? createLogMessage(String.format("failed to delete %s", networkHistoryTxtFilepath))
-        : createLogMessage(String.format("successfully deleted %s", networkHistoryTxtFilepath));
+      List<String> commands = Arrays.asList(
+        "rm -f " + networkHistoryTxtFilepath,
+        testFileExists(networkHistoryTxtFilepath));
 
-      mainHandler.sendMessage(message);
+      shell.execute(commands, new OnCommandResultListener() {
+        @Override
+        public void onCommandResult(int commandCode, int exitCode, List<String> output) {
+          String result = Joiner.on("").join(output);
+          hasNetworkHistoryFile = Boolean.parseBoolean(result);
+
+          Message message = hasNetworkHistoryFile
+            ? createLogMessage(String.format("failed to delete %s", networkHistoryTxtFilepath))
+            : createLogMessage(String.format("successfully deleted %s", networkHistoryTxtFilepath));
+
+          mainHandler.sendMessage(message);
+
+          // 3. turn on wifi
+          wifiManager.on();
+
+          // 4. update UI after 1 sec delay
+          mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              update();
+              appTracker.send(new HitBuilders.EventBuilder("action", "reset wifi").build());
+            }
+          }, 1000);
+        }
+      });
     }
-
-    // 3. enable wifi
-    wifiManager.on();
-
-    // 4. update UI after 1 sec delay
-    mainHandler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        update();
-        appTracker.send(new HitBuilders.EventBuilder("action", "reset wifi").build());
-      }
-    }, 1000);
   }
 }

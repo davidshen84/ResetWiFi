@@ -8,7 +8,7 @@ On Nexus 5 with CM 13, WiFi connection has many strange problems:
 - Unable to see a saved but hidden network
 - Will not connect to a network if it *does not have Internet connection*
 
-I found deleting the `/data/misc/wifi/networkHistory.txt` file and toggle the WiFi state can resolve thest issues.
+I found deleting the `/data/misc/wifi/networkHistory.txt` file and toggle the WiFi state can resolve this issues.
 
 For this app to work, it requires:
 

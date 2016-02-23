@@ -2,29 +2,54 @@ package org.shen.xi.resetwifi;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+import com.google.common.base.Joiner;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import eu.chainfire.libsuperuser.Shell.OnCommandResultListener;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-  private static final String TAG = MainActivity.class.getName();
+  private static final String TAG = MainActivity.class.getSimpleName();
   private static final String networkHistoryTxtFilepath = "/data/misc/wifi/networkHistory.txt";
 
   private boolean hasNetworkHistoryFile = false;
   private CheckBox checkBoxNetworkHistory;
-  private View viewIsRoot;
-  private RootProcess rootProcess;
-  private TextView textViewLog;
+  private TextView textViewMessage;
   private Handler mainHandler;
+
+
+  @Inject
+  private Shell shell;
+
+  @Inject
+  @Named("app tracker")
+  private Tracker appTracker;
+
+  @Inject
+  private WifiManagerWrapper wifiManager;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -32,18 +57,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     setContentView(R.layout.activity_main);
 
     checkBoxNetworkHistory = (CheckBox) findViewById(R.id.checkBoxNetworkHistory);
-    viewIsRoot = findViewById(R.id.textViewIsRoot);
-    textViewLog = (TextView) findViewById(R.id.textViewLog);
+    textViewMessage = (TextView) findViewById(R.id.textViewMessage);
+    textViewMessage.setMovementMethod(ScrollingMovementMethod.getInstance());
 
     mainHandler = new Handler(getMainLooper()) {
       @Override
       public void handleMessage(Message msg) {
-        if (msg.obj == null || msg.obj.getClass().isInstance(String.class)) {
+        if (msg.obj == null || !(msg.obj instanceof String)) {
           Log.e(TAG, "cannot handle message");
           return;
         }
 
-        textViewLog.append((String) msg.obj);
+        textViewMessage.append((String) msg.obj);
       }
     };
 
@@ -51,70 +76,121 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int accessWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
     int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
     if (accessWifiState == PackageManager.PERMISSION_DENIED || changeWifiState == PackageManager.PERMISSION_DENIED) {
-
       mainHandler.sendMessage(createLogMessage("cannot access/change wifi state"));
-      return;
+      finish();
+    } else {
+      Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
+      buttonResetWifi.setOnClickListener(this);
     }
 
-    Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
-    buttonResetWifi.setOnClickListener(this);
-    rootProcess = RootProcess.getInstance();
+    Injector injector = Guice.createInjector(new MainModule(this));
+    injector.injectMembers(this);
+  }
 
-    if (!rootProcess.hasRootPermission()) {
-      // no root
+  @Override
+  protected void onStart() {
+    super.onStart();
+
+    appTracker.setScreenName(TAG);
+    appTracker.send(new HitBuilders.ScreenViewBuilder().build());
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    shell.open();
+
+    // clean previous message
+    textViewMessage.setText("");
+
+    if (shell.hasPrivilege()) {
+      mainHandler.sendMessage(createLogMessage("got root permission"));
+
+      update();
+    } else {
       mainHandler.sendMessage(createLogMessage("no root permission"));
-      return;
     }
+  }
 
-    // has root
-    mainHandler.sendMessage(createLogMessage("got root permission"));
+  @Override
+  protected void onPause() {
+    super.onPause();
+    try {
+      shell.close();
+    } catch (IOException ignored) {
+    }
+  }
 
+  private void update() {
     // test /data/misc/wifi/networkHistory.txt
-    String fileExists = rootProcess.execute(testFileExists(networkHistoryTxtFilepath), true);
-    hasNetworkHistoryFile = Boolean.parseBoolean(fileExists);
-    mainHandler.post(new Runnable() {
+    shell.execute(Collections.singletonList(testFileExists(networkHistoryTxtFilepath)), new OnCommandResultListener() {
       @Override
-      public void run() {
-        checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
-        checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
-        viewIsRoot.setVisibility(View.VISIBLE);
+      public void onCommandResult(int commandCode, int exitCode, List<String> output) {
+        String result = Joiner.on("").join(output);
+        hasNetworkHistoryFile = Boolean.parseBoolean(result);
+
+        if (hasNetworkHistoryFile) {
+          mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              checkBoxNetworkHistory.setEnabled(hasNetworkHistoryFile);
+              checkBoxNetworkHistory.setChecked(hasNetworkHistoryFile);
+            }
+          });
+        }
       }
     });
   }
 
   private Message createLogMessage(String message) {
     Message msg = new Message();
-    msg.obj = message + "\n";
+    msg.obj = String.format("> %s\n", message);
 
     return msg;
   }
 
   private String testFileExists(String filepath) {
-    return String.format("[ -e %s ] && echo 'true' || echo 'false'", filepath);
+    return String.format("[ -e %s ] && echo true || echo false", filepath);
   }
 
   @Override
   public void onClick(View view) {
-    Log.d(TAG, "reset wifi");
-    WifiManager wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-    // 1. disable wifi
-    if (wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLED
-      || wifiManager.getWifiState() == WifiManager.WIFI_STATE_ENABLING) {
-      wifiManager.setWifiEnabled(false);
+    // 1. turn off wifi
+    if (wifiManager.isOn()) {
+      wifiManager.off();
     }
 
     // 2. remove files
     if (checkBoxNetworkHistory.isChecked()) {
-      rootProcess.execute("rm -f " + networkHistoryTxtFilepath, false);
-      boolean fileExists = Boolean.parseBoolean(rootProcess.execute(testFileExists(networkHistoryTxtFilepath), true));
-      Message message = fileExists
-        ? createLogMessage(String.format("failed to delete %s", networkHistoryTxtFilepath))
-        : createLogMessage(String.format("successfully deleted %s", networkHistoryTxtFilepath));
+      List<String> commands = Arrays.asList(
+        "rm -f " + networkHistoryTxtFilepath,
+        testFileExists(networkHistoryTxtFilepath));
 
-      mainHandler.sendMessage(message);
+      shell.execute(commands, new OnCommandResultListener() {
+        @Override
+        public void onCommandResult(int commandCode, int exitCode, List<String> output) {
+          String result = Joiner.on("").join(output);
+          hasNetworkHistoryFile = Boolean.parseBoolean(result);
+
+          Message message = hasNetworkHistoryFile
+            ? createLogMessage(String.format("failed to delete %s", networkHistoryTxtFilepath))
+            : createLogMessage(String.format("successfully deleted %s", networkHistoryTxtFilepath));
+
+          mainHandler.sendMessage(message);
+
+          // 3. turn on wifi
+          wifiManager.on();
+
+          // 4. update UI after 1 sec delay
+          mainHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+              update();
+              appTracker.send(new HitBuilders.EventBuilder("action", "reset wifi").build());
+            }
+          }, 1000);
+        }
+      });
     }
-
-    // 3. enable wifi
-    wifiManager.setWifiEnabled(true);
   }
 }

@@ -6,7 +6,8 @@
   android:layout_alignParentStart="true"
   android:layout_alignParentTop="true"
   android:orientation="vertical"
-  android:gravity="top">
+  android:gravity="top"
+  android:descendantFocusability="afterDescendants">
 
   <RelativeLayout
     android:layout_width="fill_parent"
@@ -53,21 +54,13 @@
   <TextView
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:text=""
-    android:id="@+id/textViewLog"
-    android:layout_weight="1" />
+    android:id="@+id/textViewMessage"
+    android:layout_weight="1"
+    android:paddingStart="5dp"
+    tools:ignore="RtlSymmetry"
+    android:fadeScrollbars="false"
+    android:scrollbars="vertical"
+    android:clickable="false"
+    android:enabled="true" />
 
-  <TextView
-    android:id="@+id/textViewIsRoot"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:text="@string/i_am_root"
-    android:textColor="@android:color/holo_red_dark"
-    android:textIsSelectable="false"
-    tools:ignore="PrivateResource"
-    android:textAlignment="center"
-    android:singleLine="false"
-    android:textSize="@dimen/abc_text_size_display_1_material"
-    android:layout_weight="1.7"
-    android:visibility="invisible" />
 </LinearLayout>

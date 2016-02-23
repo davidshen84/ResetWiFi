@@ -2,7 +2,7 @@
 
 [![Stories in Ready](https://badge.waffle.io/davidshen84/ResetWiFi.svg?label=ready&title=Ready)](http://waffle.io/davidshen84/ResetWiFi)
 
-On Nexus 5 with CM 13 CAF, WiFi has many strange problems:
+On Nexus 5 with CM 13, WiFi connection has many strange problems:
 
 - Unable to connect to a saved network
 - Unable to see a saved but hidden network

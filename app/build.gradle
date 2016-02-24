@@ -39,5 +39,5 @@ dependencies {
   compile 'com.google.android.gms:play-services-analytics:8.4.0'
   compile 'com.google.inject:guice:4.0:no_aop'
   compile 'com.google.guava:guava:19.0'
-  compile 'eu.chainfire:libsuperuser:1.0.0.+'
+  compile 'eu.chainfire:libsuperuser:1.0.0.201602011018'
 }

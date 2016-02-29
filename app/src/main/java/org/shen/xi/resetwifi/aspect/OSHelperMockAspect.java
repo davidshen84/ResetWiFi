@@ -21,7 +21,7 @@ import eu.chainfire.libsuperuser.Shell.OnCommandResultListener;
  * <p/>
  * Mock functions on OSHelper when testing/debugging
  */
-@Aspect
+//@Aspect
 public class OSHelperMockAspect {
 
   private static final String TAG = OSHelperMockAspect.class.getSimpleName();

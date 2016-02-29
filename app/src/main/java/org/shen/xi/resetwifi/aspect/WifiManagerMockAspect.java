@@ -15,7 +15,7 @@ import java.util.Arrays;
 /**
  * Created on 2/29/2016.
  */
-@Aspect
+//@Aspect
 public class WifiManagerMockAspect {
   private static final String TAG = WifiManagerMockAspect.class.getSimpleName();
 

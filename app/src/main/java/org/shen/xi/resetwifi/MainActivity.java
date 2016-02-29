@@ -21,8 +21,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -42,14 +40,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
   @Inject
-  private Shell shell;
-
-  @Inject
   @Named("app tracker")
   private Tracker appTracker;
 
   @Inject
   private WifiManagerWrapper wifiManager;
+
+  @Inject
+  private OSHelper osHelper;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -98,12 +96,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   protected void onResume() {
     super.onResume();
-    shell.open();
+    osHelper.open();
 
     // clean previous message
     textViewMessage.setText("");
 
-    if (shell.hasPrivilege()) {
+    if (osHelper.hasPrivilege()) {
       mainHandler.sendMessage(createLogMessage("got root permission"));
 
       update();
@@ -116,14 +114,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   protected void onPause() {
     super.onPause();
     try {
-      shell.close();
+      osHelper.close();
     } catch (IOException ignored) {
     }
   }
 
   private void update() {
-    // test /data/misc/wifi/networkHistory.txt
-    shell.execute(Collections.singletonList(testFileExists(networkHistoryTxtFilepath)), new OnCommandResultListener() {
+    osHelper.hasNetworkHistoryTxt(new OnCommandResultListener() {
       @Override
       public void onCommandResult(int commandCode, int exitCode, List<String> output) {
         String result = Joiner.on("").join(output);
@@ -149,10 +146,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     return msg;
   }
 
-  private String testFileExists(String filepath) {
-    return String.format("[ -e %s ] && echo true || echo false", filepath);
-  }
-
   @Override
   public void onClick(View view) {
     // 1. turn off wifi
@@ -162,11 +155,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     // 2. remove files
     if (checkBoxNetworkHistory.isChecked()) {
-      List<String> commands = Arrays.asList(
-        "rm -f " + networkHistoryTxtFilepath,
-        testFileExists(networkHistoryTxtFilepath));
-
-      shell.execute(commands, new OnCommandResultListener() {
+      osHelper.removeNetworkHistoryTxt(new OnCommandResultListener() {
         @Override
         public void onCommandResult(int commandCode, int exitCode, List<String> output) {
           String result = Joiner.on("").join(output);

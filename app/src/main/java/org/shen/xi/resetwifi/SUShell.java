@@ -13,8 +13,7 @@ import eu.chainfire.libsuperuser.Shell.OnCommandResultListener;
 /**
  * Created by on 2/23/2016.
  */
-public class SUShell implements Shell {
-
+class SUShell implements Shell {
 
   private Interactive interactive;
   private Builder builder;

@@ -10,7 +10,7 @@ import javax.inject.Inject;
  * <p/>
  * wrappers android.net.wifi.WifiManager
  */
-public class WifiManagerWrapperImpl implements WifiManagerWrapper {
+class WifiManagerWrapperImpl implements WifiManagerWrapper {
 
   private final WifiManager wifiManager;
 

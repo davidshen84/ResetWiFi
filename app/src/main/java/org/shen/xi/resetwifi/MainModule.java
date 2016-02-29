@@ -26,15 +26,17 @@ class MainModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    bind(Builder.class).in(Singleton.class);
+
     if (BuildConfig.FLAVOR.startsWith("fakeRoot")) {
       bind(Shell.class).to(FakeShellImpl.class);
       bind(WifiManagerWrapper.class).to(FakeWifiManagerWrapper.class);
     } else {
-      bind(Builder.class).in(Singleton.class);
       bind(Shell.class).to(SUShell.class).in(Singleton.class);
       bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
     }
 
+    bind(OSHelper.class).to(OSHelperImpl.class).in(Singleton.class);
     bind(GoogleAnalytics.class).toInstance(GoogleAnalytics.getInstance(ctx));
   }
 

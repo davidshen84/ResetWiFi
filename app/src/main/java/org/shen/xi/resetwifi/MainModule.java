@@ -8,9 +8,6 @@ import com.google.android.gms.analytics.Tracker;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
-import org.shen.xi.resetwifi.debug.FakeShellImpl;
-import org.shen.xi.resetwifi.debug.FakeWifiManagerWrapper;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
 
@@ -28,14 +25,8 @@ class MainModule extends AbstractModule {
   protected void configure() {
     bind(Builder.class).in(Singleton.class);
 
-    if (BuildConfig.FLAVOR.startsWith("fakeRoot")) {
-      bind(Shell.class).to(FakeShellImpl.class);
-      bind(WifiManagerWrapper.class).to(FakeWifiManagerWrapper.class);
-    } else {
-      bind(Shell.class).to(SUShell.class).in(Singleton.class);
-      bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
-    }
-
+    bind(Shell.class).to(SUShell.class).in(Singleton.class);
+    bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
     bind(OSHelper.class).to(OSHelperImpl.class).in(Singleton.class);
     bind(GoogleAnalytics.class).toInstance(GoogleAnalytics.getInstance(ctx));
   }

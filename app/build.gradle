@@ -1,3 +1,7 @@
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+
 apply plugin: 'com.android.application'
 
 android {
@@ -11,7 +15,7 @@ android {
     versionCode 3
     versionName "2.0"
 
-    buildConfigField "boolean", "hasRoot", "false"
+    buildConfigField "boolean", "hasPrivilege", "false"
     buildConfigField "boolean", "hasNetworkHistory", "false"
   }
 
@@ -26,8 +30,46 @@ android {
     full { null }
 
     fakeRoot1 {
-      buildConfigField 'boolean', 'hasRoot', 'true'
+      buildConfigField 'boolean', 'hasPrivilege', 'true'
       buildConfigField 'boolean', 'hasNetworkHistory', 'true'
+    }
+  }
+}
+
+final def log = project.logger
+final def variants = project.android.applicationVariants
+
+variants.all { variant ->
+  JavaCompile javaCompile = variant.javaCompile
+  javaCompile.doLast {
+    String[] args = ["-showWeaveInfo",
+                     "-1.5",
+                     "-inpath", javaCompile.destinationDir.toString(),
+                     "-aspectpath", javaCompile.classpath.asPath,
+                     "-d", javaCompile.destinationDir.toString(),
+                     "-classpath", javaCompile.classpath.asPath,
+                     "-bootclasspath", project.android.bootClasspath.join(File.pathSeparator)]
+    log.info "ajc args: " + Arrays.toString(args)
+
+    MessageHandler handler = new MessageHandler(true);
+    new Main().run(args, handler);
+    for (IMessage message : handler.getMessages(null, true)) {
+      switch (message.getKind()) {
+        case IMessage.ABORT:
+        case IMessage.ERROR:
+        case IMessage.FAIL:
+          log.error message.message, message.thrown
+          break;
+        case IMessage.WARNING:
+          log.warn message.message, message.thrown
+          break;
+        case IMessage.INFO:
+          log.info "ajc: " + message.message, message.thrown
+          break;
+        case IMessage.DEBUG:
+          log.debug "ajc: " + message.message, message.thrown
+          break;
+      }
     }
   }
 }
@@ -40,4 +82,5 @@ dependencies {
   compile 'com.google.inject:guice:4.0:no_aop'
   compile 'com.google.guava:guava:19.0'
   compile 'eu.chainfire:libsuperuser:1.0.0.201602011018'
+  compile 'org.aspectj:aspectjrt:1.8.8'
 }

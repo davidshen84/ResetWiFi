@@ -14,34 +14,27 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.google.common.base.Joiner;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
+
+import org.shen.xi.resetwifi.aspect.annotation.TrackAction;
+import org.shen.xi.resetwifi.aspect.annotation.TrackStart;
 
 import java.io.IOException;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import eu.chainfire.libsuperuser.Shell.OnCommandResultListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-  private static final String TAG = MainActivity.class.getSimpleName();
+  public static final String TAG = MainActivity.class.getSimpleName();
   private static final String networkHistoryTxtFilepath = "/data/misc/wifi/networkHistory.txt";
 
   private boolean hasNetworkHistoryFile = false;
   private CheckBox checkBoxNetworkHistory;
   private TextView textViewMessage;
   private Handler mainHandler;
-
-
-  @Inject
-  @Named("app tracker")
-  private Tracker appTracker;
 
   @Inject
   private WifiManagerWrapper wifiManager;
@@ -81,16 +74,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       buttonResetWifi.setOnClickListener(this);
     }
 
-    Injector injector = Guice.createInjector(new MainModule(this));
-    injector.injectMembers(this);
+    ((MainApplication) getApplication())
+      .getInjector().injectMembers(this);
   }
 
   @Override
+  @TrackStart
   protected void onStart() {
     super.onStart();
-
-    appTracker.setScreenName(TAG);
-    appTracker.send(new HitBuilders.ScreenViewBuilder().build());
   }
 
   @Override
@@ -147,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   }
 
   @Override
+  @TrackAction(action = "reset wifi")
   public void onClick(View view) {
     // 1. turn off wifi
     if (wifiManager.isOn()) {
@@ -175,7 +167,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void run() {
               update();
-              appTracker.send(new HitBuilders.EventBuilder("action", "reset wifi").build());
             }
           }, 1000);
         }

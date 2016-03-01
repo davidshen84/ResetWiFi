@@ -11,30 +11,34 @@ import com.google.inject.Provides;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import eu.chainfire.libsuperuser.Shell.Builder;
-
 
 class MainModule extends AbstractModule {
-  private final Context ctx;
+  private final Context context;
 
   public MainModule(Context context) {
-    ctx = context;
+    this.context = context;
   }
 
   @Override
   protected void configure() {
-    bind(Builder.class).in(Singleton.class);
-
     bind(Shell.class).to(SUShell.class).in(Singleton.class);
-    bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
     bind(OSHelper.class).to(OSHelperImpl.class).in(Singleton.class);
-    bind(GoogleAnalytics.class).toInstance(GoogleAnalytics.getInstance(ctx));
+    bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
   }
 
   @Provides
   @Singleton
   private WifiManager providesWifiManager() {
-    return (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
+    return (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+  }
+
+  @Provides
+  @Singleton
+  private GoogleAnalytics providesGoogleAnalytics() {
+    GoogleAnalytics instance = GoogleAnalytics.getInstance(context);
+    instance.setDryRun(BuildConfig.DEBUG);
+
+    return instance;
   }
 
   @Provides

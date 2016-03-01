@@ -2,13 +2,14 @@
 <project version="4">
   <component name="EntryPointsManager">
     <entry_points version="2.0" />
-    <list size="6">
+    <list size="7">
       <item index="0" class="java.lang.String" itemvalue="com.google.inject.Provides" />
       <item index="1" class="java.lang.String" itemvalue="javax.inject.Inject" />
-      <item index="2" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Around" />
-      <item index="3" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Aspect" />
-      <item index="4" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Before" />
-      <item index="5" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Pointcut" />
+      <item index="2" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.After" />
+      <item index="3" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Around" />
+      <item index="4" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Aspect" />
+      <item index="5" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Before" />
+      <item index="6" class="java.lang.String" itemvalue="org.aspectj.lang.annotation.Pointcut" />
     </list>
   </component>
   <component name="NullableNotNullManager">

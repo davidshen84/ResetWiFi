@@ -1,11 +1,9 @@
 package org.shen.xi.resetwifi;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
@@ -16,6 +14,7 @@ import android.widget.TextView;
 
 import com.google.common.base.Joiner;
 
+import org.shen.xi.resetwifi.aspect.annotation.RequirePermissions;
 import org.shen.xi.resetwifi.aspect.annotation.TrackAction;
 import org.shen.xi.resetwifi.aspect.annotation.TrackStart;
 
@@ -43,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   private OSHelper osHelper;
 
   @Override
+  @RequirePermissions(permissions = {Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE})
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
@@ -63,19 +63,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
       }
     };
 
-    // check change wifi permission
-    int accessWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
-    int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
-    if (accessWifiState == PackageManager.PERMISSION_DENIED || changeWifiState == PackageManager.PERMISSION_DENIED) {
-      mainHandler.sendMessage(createLogMessage(getString(R.string.no_wifi_access)));
-      finish();
-    } else {
-      Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
-      buttonResetWifi.setOnClickListener(this);
-    }
+    Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
+    buttonResetWifi.setOnClickListener(this);
 
-    ((MainApplication) getApplication())
-      .getInjector().injectMembers(this);
+    ((MainApplication) getApplication()).getInjector().injectMembers(this);
   }
 
   @Override
@@ -140,13 +131,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Override
   @TrackAction(action = "reset wifi")
   public void onClick(View view) {
-    // 1. turn off wifi
-    if (wifiManager.isOn()) {
-      wifiManager.off();
-    }
-
-    // 2. remove files
     if (checkBoxNetworkHistory.isChecked()) {
+      // 1. turn off wifi
+      if (wifiManager.isOn()) {
+        wifiManager.off();
+      }
+
+      // 2. remove files
       osHelper.removeNetworkHistoryTxt(new OnCommandResultListener() {
         @Override
         public void onCommandResult(int commandCode, int exitCode, List<String> output) {

@@ -29,7 +29,8 @@ public class WifiManagerMockAspect {
     String classSimpleName = signature.getDeclaringType().getSimpleName();
     String methodName = signature.getName();
 
-    Log.d(TAG, String.format("would have executed %s.%s(%s)", classSimpleName, methodName, Arrays.toString(joinPoint.getArgs())));
+    Log.d(TAG, String.format("would have executed %s.%s(%s)",
+      classSimpleName, methodName, Arrays.toString(joinPoint.getArgs())));
   }
 
   @Pointcut("execution(boolean org.shen.xi.resetwifi.WifiManagerWrapper.isOn())")

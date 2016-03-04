@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">重置无线</string>
+  <string name="remove_warning">选中的文件会被删除</string>
+  <string name="reset_wifi">重置无线</string>
+  <string name="no_wifi_access">无法 访问/修改 无线状态</string>
+  <string name="has_privilege">取得管理员权限</string>
+  <string name="no_privilege">无管理员权限</string>
+  <string name="failed_delete_x">无法删除 %s</string>
+  <string name="success_delete_x">成功删除 %s</string>
+</resources>

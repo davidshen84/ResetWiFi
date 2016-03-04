@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     int accessWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
     int changeWifiState = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
     if (accessWifiState == PackageManager.PERMISSION_DENIED || changeWifiState == PackageManager.PERMISSION_DENIED) {
-      mainHandler.sendMessage(createLogMessage("cannot access/change wifi state"));
+      mainHandler.sendMessage(createLogMessage(getString(R.string.no_wifi_access)));
       finish();
     } else {
       Button buttonResetWifi = (Button) findViewById(R.id.buttonResetWifi);
@@ -93,11 +93,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     textViewMessage.setText("");
 
     if (osHelper.hasPrivilege()) {
-      mainHandler.sendMessage(createLogMessage("got root permission"));
+      mainHandler.sendMessage(createLogMessage(getString(R.string.has_privilege)));
 
       update();
     } else {
-      mainHandler.sendMessage(createLogMessage("no root permission"));
+      mainHandler.sendMessage(createLogMessage(getString(R.string.no_privilege)));
     }
   }
 
@@ -154,8 +154,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
           hasNetworkHistoryFile = Boolean.parseBoolean(result);
 
           Message message = hasNetworkHistoryFile
-            ? createLogMessage(String.format("failed to delete %s", networkHistoryTxtFilepath))
-            : createLogMessage(String.format("successfully deleted %s", networkHistoryTxtFilepath));
+            ? createLogMessage(String.format(getString(R.string.failed_delete_x), networkHistoryTxtFilepath))
+            : createLogMessage(String.format(getString(R.string.success_delete_x), networkHistoryTxtFilepath));
 
           mainHandler.sendMessage(message);
 

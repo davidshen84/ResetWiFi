@@ -32,8 +32,7 @@
     <!--GA dispatcher-->
     <receiver
       android:name="com.google.android.gms.analytics.AnalyticsReceiver"
-      android:enabled="true"
-      android:exported="false">
+      android:enabled="true">
       <intent-filter>
         <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
       </intent-filter>
@@ -46,8 +45,7 @@
     <!--GA campaign tracker-->
     <receiver
       android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"
-      android:enabled="false"
-      android:exported="true"
+      android:enabled="true"
       android:permission="android.permission.INSTALL_PACKAGES">
       <intent-filter>
         <action android:name="com.android.vending.INSTALL_REFERRER" />
@@ -55,7 +53,8 @@
     </receiver>
     <service
       android:name="com.google.android.gms.analytics.CampaignTrackingService"
-      android:enabled="false" />
+      android:enabled="true"
+      android:exported="false" />
   </application>
 
 </manifest>

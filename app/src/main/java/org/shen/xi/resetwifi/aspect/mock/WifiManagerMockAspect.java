@@ -20,10 +20,10 @@ public class WifiManagerMockAspect {
   private static final String TAG = WifiManagerMockAspect.class.getSimpleName();
 
   @Pointcut("execution(* org.shen.xi.resetwifi.WifiManagerWrapper.*(..))")
-  public void allPointcut() {
+  public void tracePointcut() {
   }
 
-  @Before("allPointcut()")
+  @Before("tracePointcut()")
   public void weaveAllPointcut(JoinPoint joinPoint) {
     Signature signature = joinPoint.getSignature();
     String classSimpleName = signature.getDeclaringType().getSimpleName();

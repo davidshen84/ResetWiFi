@@ -11,6 +11,8 @@ import com.google.inject.Provides;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
+import eu.chainfire.libsuperuser.Shell.Builder;
+
 
 class MainModule extends AbstractModule {
   private final Context context;
@@ -21,6 +23,7 @@ class MainModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    bind(Builder.class);
     bind(Shell.class).to(SUShell.class).in(Singleton.class);
     bind(OSHelper.class).to(OSHelperImpl.class).in(Singleton.class);
     bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);

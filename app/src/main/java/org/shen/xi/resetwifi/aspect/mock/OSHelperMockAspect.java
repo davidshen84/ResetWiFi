@@ -21,13 +21,34 @@ import eu.chainfire.libsuperuser.Shell.OnCommandResultListener;
  * <p/>
  * Mock functions on OSHelper when testing/debugging
  */
-//@Aspect
+@Aspect
 public class OSHelperMockAspect {
 
   private static final String TAG = OSHelperMockAspect.class.getSimpleName();
 
-  @Pointcut("execution(* org.shen.xi.resetwifi.OSHelper.*(..))")
-  public void tracePointcut() {
+  @Pointcut("execution(* org.shen.xi.resetwifi.OSHelper.*(..)) && if()")
+  public static boolean tracePointcut() {
+    return BuildConfig.DEBUG;
+  }
+
+  @Pointcut("execution(void org.shen.xi.resetwifi.OSHelper.hasNetworkHistoryTxt(eu.chainfire.libsuperuser.Shell.OnCommandResultListener)) && if()")
+  public static boolean mockHasNetworkHistoryTxt() {
+    return BuildConfig.DEBUG;
+  }
+
+  @Pointcut("execution(void org.shen.xi.resetwifi.OSHelper.removeNetworkHistoryTxt(eu.chainfire.libsuperuser.Shell.OnCommandResultListener)) && if()")
+  public static boolean mockRemoveNetworkHistoryTxt() {
+    return BuildConfig.DEBUG;
+  }
+
+  @Pointcut("execution(boolean org.shen.xi.resetwifi.OSHelper.hasPrivilege()) && if()")
+  public static boolean mockHasPrivilege() {
+    return BuildConfig.DEBUG;
+  }
+
+  @Pointcut("execution(void org.shen.xi.resetwifi.OSHelper.*()) && if()")
+  public static boolean mockOpenClose() {
+    return BuildConfig.DEBUG;
   }
 
   @Before("tracePointcut()")
@@ -39,31 +60,15 @@ public class OSHelperMockAspect {
     Log.d(TAG, String.format("would have executed %s.%s(%s)", classSimpleName, methodName, Arrays.toString(joinPoint.getArgs())));
   }
 
-  @Pointcut("execution(void org.shen.xi.resetwifi.OSHelper.hasNetworkHistoryTxt(eu.chainfire.libsuperuser.Shell.OnCommandResultListener))")
-  public void mockHasNetworkHistoryTxt() {
-  }
-
-  @Pointcut("execution(void org.shen.xi.resetwifi.OSHelper.removeNetworkHistoryTxt(eu.chainfire.libsuperuser.Shell.OnCommandResultListener))")
-  public void mockRemoveNetworkHistoryTxt() {
-  }
-
   @Around("mockHasNetworkHistoryTxt() || mockRemoveNetworkHistoryTxt()")
   public void weaveOSOperation(ProceedingJoinPoint joinPoint) {
     // handle the callback
     ((OnCommandResultListener) joinPoint.getArgs()[0]).onCommandResult(0, 0, Collections.singletonList("true"));
   }
 
-  @Pointcut("execution(boolean org.shen.xi.resetwifi.OSHelper.hasPrivilege())")
-  public void mockHasPrivilege() {
-  }
-
   @Around("mockHasPrivilege()")
   public boolean weaveHasPrivilege(ProceedingJoinPoint joinPoint) throws Throwable {
     return BuildConfig.hasPrivilege;
-  }
-
-  @Pointcut("execution(void org.shen.xi.resetwifi.OSHelper.*())")
-  public void mockOpenClose() {
   }
 
   @Around("mockOpenClose()")

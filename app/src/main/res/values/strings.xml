@@ -1,6 +1,11 @@
 <resources>
   <string name="app_name">Reset WiFi</string>
-  <string name="network_history">networkHistory.txt</string>
+  <string name="network_history" translatable="false">networkHistory.txt</string>
   <string name="reset_wifi">Reset WiFi</string>
   <string name="remove_warning">Selected files will be removed</string>
+  <string name="no_wifi_access">cannot access/change wifi state</string>
+  <string name="has_privilege">got root permission</string>
+  <string name="no_privilege">no root permission</string>
+  <string name="failed_delete_x">failed to delete %s</string>
+  <string name="success_delete_x">successfully deleted %s</string>
 </resources>

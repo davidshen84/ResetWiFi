@@ -7,27 +7,17 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.shen.xi.resetwifi.MainActivity;
 import org.shen.xi.resetwifi.MainApplication;
 import org.shen.xi.resetwifi.aspect.annotation.TrackAction;
+
+import static org.shen.xi.resetwifi.aspect.Utility.getAnnotationOnMethod;
 
 /**
  * Created on 3/1/2016.
  */
 @Aspect
 public class TrackAspect {
-
-  @SuppressWarnings("unchecked")
-  private static <T> T castTarget(Object target, Class<T> expectedClass) throws Throwable {
-    if (!expectedClass.isInstance(target)) {
-      String targetErrorMessage = "target is not a derivative of %s";
-      throw new IllegalStateException(
-        String.format(targetErrorMessage, expectedClass.getCanonicalName()));
-    }
-
-    return (T) target;
-  }
 
   @Pointcut("execution(@org.shen.xi.resetwifi.aspect.annotation.TrackStart * org.shen.xi.resetwifi.MainActivity.*(..))")
   public void trackStart() {
@@ -36,7 +26,7 @@ public class TrackAspect {
   @After("trackStart()")
   public void weaveTrackStart(JoinPoint joinPoint) throws Throwable {
     Object target = joinPoint.getTarget();
-    MainActivity activity = castTarget(target, MainActivity.class);
+    MainActivity activity = Utility.castTarget(target, MainActivity.class);
 
     MainApplication mainApplication = (MainApplication) activity.getApplication();
     Tracker appTracker = mainApplication.getAppTracker();
@@ -52,13 +42,12 @@ public class TrackAspect {
   @After("trackAction()")
   public void weaveTrackAction(JoinPoint joinPoint) throws Throwable {
     Object target = joinPoint.getTarget();
-    MainActivity mainActivity = castTarget(target, MainActivity.class);
+    MainActivity mainActivity = Utility.castTarget(target, MainActivity.class);
 
     MainApplication mainApplication = (MainApplication) mainActivity.getApplication();
     Tracker appTracker = mainApplication.getAppTracker();
 
-    MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
-    TrackAction annotation = methodSignature.getMethod().getAnnotation(TrackAction.class);
+    TrackAction annotation = getAnnotationOnMethod(joinPoint.getSignature(), TrackAction.class);
 
     appTracker.send(new HitBuilders.EventBuilder("action", annotation.action()).build());
   }

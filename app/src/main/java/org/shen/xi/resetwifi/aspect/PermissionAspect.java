@@ -6,9 +6,10 @@ import android.support.v4.content.ContextCompat;
 import android.widget.Toast;
 
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.shen.xi.resetwifi.R;
 import org.shen.xi.resetwifi.aspect.annotation.RequirePermissions;
 
 import static org.shen.xi.resetwifi.aspect.Utility.getAnnotationOnMethod;
@@ -19,11 +20,11 @@ import static org.shen.xi.resetwifi.aspect.Utility.getAnnotationOnMethod;
 @Aspect
 public class PermissionAspect {
 
-  @Pointcut("execution(@org.shen.xi.resetwifi.aspect.annotation.RequirePermissions void org.shen.xi.resetwifi.*.*(..))")
+  @Pointcut("execution(@org.shen.xi.resetwifi.aspect.annotation.RequirePermissions void android.support.v7.app.AppCompatActivity+.*(..))")
   public void requirePermissions() {
   }
 
-  @After("requirePermissions()")
+  @Before("requirePermissions()")
   public void weaveRequirePermission(JoinPoint joinPoint) throws Throwable {
     Object target = joinPoint.getTarget();
     Activity activity = Utility.castTarget(target, Activity.class);
@@ -39,7 +40,7 @@ public class PermissionAspect {
     }
 
     if (missingPermission) {
-      Toast.makeText(activity, "missing required permissions", Toast.LENGTH_SHORT).show();
+      Toast.makeText(activity, R.string.require_permissions, Toast.LENGTH_SHORT).show();
       activity.finish();
     }
   }

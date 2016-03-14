@@ -8,4 +8,5 @@
   <string name="no_privilege">no root permission</string>
   <string name="failed_delete_x">failed to delete %s</string>
   <string name="success_delete_x">successfully deleted %s</string>
+  <string name="require_permissions">missing required permissions</string>
 </resources>

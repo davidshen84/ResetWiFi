@@ -8,4 +8,6 @@
   <string name="no_privilege">无管理员权限</string>
   <string name="failed_delete_x">无法删除 %s</string>
   <string name="success_delete_x">成功删除 %s</string>
+  <string name="network_history" translatable="false"></string>
+  <string name="require_permissions">缺少必须的权限</string>
 </resources>

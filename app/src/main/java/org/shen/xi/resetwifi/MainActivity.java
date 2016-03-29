@@ -1,6 +1,5 @@
 package org.shen.xi.resetwifi;
 
-import android.Manifest;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,10 +10,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.common.base.Joiner;
 
-import org.shen.xi.resetwifi.aspect.annotation.RequirePermissions;
 import org.shen.xi.resetwifi.aspect.annotation.TrackAction;
 import org.shen.xi.resetwifi.aspect.annotation.TrackStart;
 
@@ -41,8 +40,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @Inject
   private OSHelper osHelper;
 
+  @Inject
+  private PermissionManager permissionManager;
+
   @Override
-  @RequirePermissions(permissions = {Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.CHANGE_WIFI_STATE})
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
@@ -73,6 +74,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
   @TrackStart
   protected void onStart() {
     super.onStart();
+
+    if (!permissionManager.hasRequiredPermissions()) {
+      Toast.makeText(this, R.string.require_permissions, Toast.LENGTH_SHORT).show();
+      finish();
+    }
   }
 
   @Override

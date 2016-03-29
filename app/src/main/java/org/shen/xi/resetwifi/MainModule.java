@@ -27,6 +27,8 @@ class MainModule extends AbstractModule {
     bind(Shell.class).to(SUShell.class).in(Singleton.class);
     bind(OSHelper.class).to(OSHelperImpl.class).in(Singleton.class);
     bind(WifiManagerWrapper.class).to(WifiManagerWrapperImpl.class).in(Singleton.class);
+    bind(PermissionManager.class).to(PermissionManagerImpl.class).in(Singleton.class);
+    bind(Context.class).toInstance(context);
   }
 
   @Provides
